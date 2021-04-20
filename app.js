@@ -35,3 +35,25 @@ app.get("/players/", async (request, response) => {
   const playersList = await db.all(getPlayersList);
   response.send(playersList);
 });
+
+app.post("/players/", async (request, response) => {
+  const addPlayer = `
+    INSERT INTO cricket_team(player_name, jersey_number, role)
+    VALUES ("Vishal", 17, "Bowler");
+    `;
+
+  await db.run(addPlayer);
+  response.send("Player Added to Team");
+});
+
+app.get("/players/:playerId", async (request, response) => {
+  const { playerId } = request.params;
+  console.log(request.params);
+  const playerById = `
+    SELECT * from cricket_team
+    WHERE player_id=${playerId};
+    `;
+
+  const playerDetails = await db.get(playerById);
+  response.send(playerDetails);
+});
