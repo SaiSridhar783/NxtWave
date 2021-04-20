@@ -105,8 +105,8 @@ app.get("/directors/", async (request, response) => {
 app.get("/directors/:directorId/movies/", async (request, response) => {
   const { directorId } = request.params;
   const query = `
-    select movie_name from movie INNER JOIN director 
-    ON movie.director_id=director.director_id;
+    select movie_name from movie 
+    WHERE movie.director_id=${directorId};
     `;
 
   const resp = await database.all(query);
