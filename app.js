@@ -25,14 +25,13 @@ const initializeDBAndServer = async () => {
 
 initializeDBAndServer();
 
-app.get("/books/", async (request, response) => {
-  const getBooksQuery = `
+app.get("/players/", async (request, response) => {
+  const getPlayersList = `
     SELECT
       *
     FROM
-      book
-    ORDER BY
-      book_id;`;
-  const booksArray = await db.all(getBooksQuery);
-  response.send(booksArray);
+      cricket_team
+;`;
+  const playersList = await db.all(getPlayersList);
+  response.send(playersList);
 });
