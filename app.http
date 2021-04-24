@@ -1,0 +1,29 @@
+POST http://localhost:3000/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "nagachika_hideyoshi",
+  "name": "Nagachika Hideyoshi",
+  "password": "chikanaga@yoshihide",
+  "gender": "male",
+  "location": "Tokyo"
+}
+
+###
+POST http://localhost:3000/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "nagachika_hideyoshi",
+  "password": "chikanaga@yoshihid"
+}
+
+###
+PUT http://localhost:3000/change-password HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "adam_richard",
+  "oldPassword": "richard@123",
+  "newPassword": "richard_567"
+}
