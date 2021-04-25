@@ -77,7 +77,27 @@ app.get("/states/", authenticateToken, async (request, response) => {
     FROM
         state;`;
   const res = await db.all(query);
-  response.send("Success");
+  response.send(
+    res.map((item) => ({
+      stateId: item.state_id,
+      stateName: item.state_name,
+      population: item.population,
+    }))
+  );
+});
+
+app.get("/states/:stateId", authenticateToken, async (request, response) => {
+  const { stateId } = request.params;
+  const query = `
+      SELECT
+        *
+      FROM
+        state
+      WHERE
+        state_id=${stateId};
+    `;
+  const res = await db.get(query);
+  response.send(res);
 });
 
 module.exports = app;
