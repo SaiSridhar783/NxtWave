@@ -30,6 +30,27 @@ const initializeDbAndServer = async () => {
 
 initializeDbAndServer();
 
+const authenticateToken = (request, response, next) => {
+  let jwtToken;
+  const authHeader = request.headers["authorization"];
+  if (authHeader !== undefined) {
+    jwtToken = authHeader.split(" ")[1];
+  }
+  if (jwtToken === undefined) {
+    response.status(401);
+    response.send("Invalid JWT Token");
+  } else {
+    JWT.verify(jwtToken, "Rob_D_Lucci", async (error, payload) => {
+      if (error) {
+        response.status(401);
+        response.send("Invalid JWT Token");
+      } else {
+        next();
+      }
+    });
+  }
+};
+
 app.post("/login/", async (request, response) => {
   const { username, password } = request.body;
   const userCheck = await db.get(
@@ -49,30 +70,14 @@ app.post("/login/", async (request, response) => {
   }
 });
 
-app.get("/states/", async (request, response) => {
-  const authHeader = request.headers["authorization"];
-  let jwtToken;
-  if (authHeader) {
-    jwtToken = authHeader.split(" ")[1];
-  }
-  if (!jwtToken) {
-    response.status(401);
-    response.send("Invalid JWT Token");
-  } else {
-    JWT.verify(jwtToken, "Rob_D_Lucci", async (error, payload) => {
-      if (error) {
-        response.status(401).json("Invalid JWT Token");
-      } else {
-        const query = `
-            SELECT
-              *
-            FROM
-             state;`;
-        const res = await db.all(query);
-        response.send(res);
-      }
-    });
-  }
+app.get("/states/", authenticateToken, async (request, response) => {
+  const query = `
+    SELECT
+        *
+    FROM
+        state;`;
+  const res = await db.all(query);
+  response.send("Success");
 });
 
 module.exports = app;
