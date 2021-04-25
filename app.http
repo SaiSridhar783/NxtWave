@@ -13,3 +13,35 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNoc
 ###
 GET http://localhost:3000/states/3 HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNocmlzdG9waGVyX3BoaWxsaXBzIiwiaWF0IjoxNjE5MzM5MzIxfQ.awzHi8uEm_lOPAXQjkNH2-w-HkDG2Tvw6BgTZmgKv40
+
+###
+POST http://localhost:3000/districts/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "districtName": "Bagalkot",
+  "stateId": 3,
+  "cases": 2323,
+  "cured": 2000,
+  "active": 315,
+  "deaths": 8
+}
+
+###
+GET http://localhost:3000/districts/8/ HTTP/1.1
+
+###
+DELETE http://localhost:3000/districts/3/ HTTP/1.1
+
+###
+PUT http://localhost:3000/districts/3/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "districtName": "Nadia",
+  "stateId": 3,
+  "cases": 9628,
+  "cured": 6524,
+  "active": 3000,
+  "deaths": 104
+}
