@@ -94,8 +94,10 @@ app.post("/login/", async (req, response) => {
       response.status(400).json("Invalid password");
     } else {
       const payload = { username };
-      const jwtToken = jwt.sign(payload, "Rob_D_Lucci");
+      const jwtToken = jwt.sign(payload, "Abbachio");
       response.send({ jwtToken });
     }
   }
 });
+
+app.get();
