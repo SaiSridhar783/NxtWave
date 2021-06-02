@@ -40,11 +40,13 @@ const authenticateToken = (request, response, next) => {
     response.status(401);
     response.send("Invalid JWT Token");
   } else {
-    jwt.verify(jwtToken, "Rob_D_Lucci", async (error, payload) => {
+    jwt.verify(jwtToken, "Abbachio", async (error, payload) => {
       if (error) {
         response.status(401);
         response.send("Invalid JWT Token");
       } else {
+        x = jwt.decode(jwtToken, "Abbachio");
+        request.body.username = x.username;
         next();
       }
     });
@@ -67,14 +69,14 @@ app.post("/register/", async (req, response) => {
                         `;
 
   if (userCheck) {
-    response.status(400).json("User already exists");
+    response.status(400).send("User already exists");
   } else {
     const passCheck = password.length < 6;
     if (passCheck) {
-      response.status(400).json("Password is too short");
+      response.status(400).send("Password is too short");
     } else {
       await db.run(insertQuery);
-      response.status(200).json("User created successfully");
+      response.status(200).send("User created successfully");
     }
   }
 });
@@ -87,11 +89,11 @@ app.post("/login/", async (req, response) => {
   );
 
   if (!userCheck) {
-    response.status(400).json("Invalid user");
+    response.status(400).send("Invalid user");
   } else {
     const passCheck = await bcrypt.compare(password, userCheck.password);
     if (!passCheck) {
-      response.status(400).json("Invalid password");
+      response.status(400).send("Invalid password");
     } else {
       const payload = { username };
       const jwtToken = jwt.sign(payload, "Abbachio");
@@ -100,4 +102,82 @@ app.post("/login/", async (req, response) => {
   }
 });
 
-app.get();
+app.get("/user/tweets/feed/", authenticateToken, async (req, res) => {
+  const username = req.body.username;
+
+  const query = `
+        SELECT DISTINCT follower.following_user_id
+            FROM
+        (user INNER JOIN follower
+            ON
+        user.user_id = follower.follower_user_id) as t1
+            WHERE
+        username = '${username}';
+    `;
+  const result1 = await db.all(query);
+  let arr = result1.map((item) => item.following_user_id);
+
+  const query2 = `
+        SELECT username, tweet, date_time as dateTime
+            FROM
+        user INNER JOIN tweet ON
+        user.user_id = tweet.user_id
+            WHERE
+        user.user_id IN (${arr.join(",")})
+            ORDER BY dateTime DESC
+            LIMIT 4;
+    `;
+
+  const result2 = await db.all(query2);
+  res.status(200).json(result2);
+});
+
+app.get("/user/following/", authenticateToken, async (req, res) => {
+  const username = req.body.username;
+
+  const query = `
+        SELECT follower.following_user_id
+            FROM
+        (user INNER JOIN follower
+            ON
+        user.user_id = follower.follower_user_id) as t1
+            WHERE
+        username = '${username}';
+    `;
+  const result1 = await db.all(query);
+  let arr = result1.map((item) => item.following_user_id);
+  arr = [...new Set(arr)];
+
+  const query2 = `
+        SELECT name FROM user WHERE user_id IN (${arr.join(",")});
+    `;
+
+  const result2 = await db.all(query2);
+  res.status(200).json(result2);
+});
+
+app.get("/user/followers/", authenticateToken, async (req, res) => {
+  const username = req.body.username;
+
+  const query = `
+        SELECT DISTINCT follower.follower_user_id
+            FROM
+        (user INNER JOIN follower
+            ON
+        user.user_id = follower.following_user_id) as t1
+            WHERE
+        username = '${username}';
+    `;
+  const result1 = await db.all(query);
+  let arr = result1.map((item) => item.follower_user_id);
+  //arr = [...new Set(arr)];
+
+  const query2 = `
+        SELECT name FROM user WHERE user_id IN (${arr.join(",")});
+    `;
+
+  const result2 = await db.all(query2);
+  res.status(200).json(result2);
+});
+
+module.exports = app;
