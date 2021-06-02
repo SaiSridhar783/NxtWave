@@ -317,4 +317,34 @@ app.post("/user/tweets/", authenticateToken, async (req, res) => {
   res.status(200).send("Created a Tweet");
 });
 
+app.delete("/tweets/:tweetId/", authenticateToken, async (req, res) => {
+  const username = req.body.username;
+  const { tweetId } = req.params;
+
+  const user = await db.get(`SELECT * from user where username='${username}';`);
+  const { user_id } = user;
+
+  const tweetStat = await db.all(
+    `SELECT DISTINCT tweet_id from tweet where user_id='${user_id}';`
+  );
+
+  const arr = tweetStat.map((item) => item.tweet_id);
+  const x = arr.join(",");
+
+  if (
+    !arr.find((each) => {
+      return each == tweetId;
+    })
+  ) {
+    res.status(401).send("Invalid Request");
+    return;
+  }
+
+  const query = `DELETE from tweet WHERE tweet_id=${tweetId}`;
+  const result = await db.run(query);
+  console.log(result);
+
+  res.status(200).send("Tweet Removed");
+});
+
 module.exports = app;
