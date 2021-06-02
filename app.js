@@ -297,9 +297,24 @@ app.get("/user/tweets/", authenticateToken, async (req, res) => {
 
   const result = await db.all(query);
 
-  //console.log(result);
-
   res.status(200).send(result);
+});
+
+app.post("/user/tweets/", authenticateToken, async (req, res) => {
+  const username = req.body.username;
+  const { tweet } = req.body;
+
+  const user = await db.get(`SELECT * from user where username='${username}';`);
+  const { user_id } = user;
+
+  const query = `
+        INSERT INTO tweet(tweet, user_id, date_time) VALUES 
+            ('${tweet}', ${user_id}, '${new Date()}');
+    `;
+
+  await db.run(query);
+
+  res.status(200).send("Created a Tweet");
 });
 
 module.exports = app;
