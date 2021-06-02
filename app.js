@@ -284,4 +284,22 @@ app.get("/tweets/:tweetId/replies/", authenticateToken, async (req, res) => {
   res.status(200).send({ replies: result2 });
 });
 
+app.get("/user/tweets/", authenticateToken, async (req, res) => {
+  const username = req.body.username;
+
+  const query = `
+        SELECT tweet, count(DISTINCT like_id) as likes,
+            count(DISTINCT reply_id) as replies, tweet.date_time as dateTime
+        FROM tweet INNER JOIN like ON tweet.tweet_id = like.tweet_id INNER JOIN reply ON
+            like.tweet_id = reply.tweet_id INNER JOIN user ON user.user_id=tweet.user_id
+        WHERE user.username='${username}';
+    `;
+
+  const result = await db.all(query);
+
+  //console.log(result);
+
+  res.status(200).send(result);
+});
+
 module.exports = app;
