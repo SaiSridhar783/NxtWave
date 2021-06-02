@@ -180,4 +180,37 @@ app.get("/user/followers/", authenticateToken, async (req, res) => {
   res.status(200).json(result2);
 });
 
+app.get("/tweets/:tweetId/", authenticateToken, async (req, res) => {
+  const username = req.body.username;
+  const { tweetId } = req.params;
+
+  const query = `
+        SELECT DISTINCT follower.following_user_id
+            FROM
+        (user INNER JOIN follower
+            ON
+        user.user_id = follower.follower_user_id) as t1
+            WHERE
+        username = '${username}';
+    `;
+  const result1 = await db.all(query);
+  let arr = result1.map((item) => item.following_user_id);
+  const x = arr.join(",");
+
+  const query2 = `
+        SELECT tweet, count(like_id) as likes, count(reply_id) as replies, tweet.date_time as dateTime
+            FROM tweet INNER JOIN like ON tweet.tweet_id = like.tweet_id INNER JOIN reply ON
+            like.tweet_id = reply.tweet_id
+            WHERE tweet.tweet_id=${tweetId} AND tweet.user_id IN (${x});
+    `;
+
+  const result2 = await db.get(query2);
+
+  if (result2.tweet === null) {
+    res.status(401).send("Invalid Request");
+  } else {
+    res.status(200).json(result2);
+  }
+});
+
 module.exports = app;
